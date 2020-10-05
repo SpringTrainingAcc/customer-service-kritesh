@@ -56,11 +56,7 @@ pipeline {
                     expression {
                         openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
-                                if (openshift.selector("bc", "${args.SERVICE_NAME}").exists()){
-                                    echo "Image Builder already exists"
-                                    return
-                                }
-                                //return !openshift.selector("bc", "${args.SERVICE_NAME}").exists()
+                                return !openshift.selector("bc", "${args.SERVICE_NAME}").exists()
                             }
                         }
                     }
