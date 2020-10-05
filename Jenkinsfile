@@ -1,6 +1,7 @@
 def args = [:]
-args.CLUSTER_NAME = ""
-args.PROJECT_NAME = "cloudnative"
+args.CLUSTER_NAME = "https://172.30.0.1:443"
+//args.PROJECT_NAME = "cloudnative"
+args.PROJECT_NAME = "cicd"
 args.SERVICE_NAME = "customer-service-kritesh"
 args.SERVICE_VERSION = "0.0.1-SNAPSHOT"
 
@@ -8,7 +9,7 @@ pipeline {
     agent any
         options {
             disableConcurrentBuilds()
-            buildDiscarder(logRotator(numToKeepStr: '2'))
+            buildDiscarder(logRotator(numToKeepStr: '5'))
         }
         stages {
             stage('preamble') {
@@ -53,7 +54,7 @@ pipeline {
             stage('Create Image Builder') {
                 when {
                     expression {
-                        openshift.withCluster() {
+                        openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
                                 return !openshift.selector("bc", "${args.SERVICE_NAME}").exists()
                             }
@@ -62,7 +63,7 @@ pipeline {
                 }
                 steps {
                     script {
-                        openshift.withCluster() {
+                        openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
                                 openshift.newApp "registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift~./", "--name=${args.SERVICE_NAME}"
                                 //openshift.newBuild("--name=${args.SERVICE_NAME}", "--image-stream=redhat-openjdk18-openshift:latest", "--binary=true")
@@ -74,7 +75,7 @@ pipeline {
             stage('Build Image') {
                 steps {
                     script {
-                        openshift.withCluster() {
+                        openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
                                 def build = openshift.selector("bc", "${args.SERVICE_NAME}");
                                 def startedBuild = build.startBuild("--from-file=\"./target/${args.SERVICE_NAME}-${args.SERVICE_VERSION}.jar\"");
@@ -88,7 +89,7 @@ pipeline {
             stage('Tag Image') {
                 steps {
                     script {
-                        openshift.withCluster() {
+                        openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
                                 openshift.tag("${args.SERVICE_NAME}"+":latest", "${args.SERVICE_NAME}"+":dev")
                             }
@@ -99,7 +100,7 @@ pipeline {
             stage('Deploy STAGE') {
                 steps {
                     script {
-                        openshift.withCluster() {
+                        openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
                                 if (openshift.selector('dc', "${args.SERVICE_NAME}").exists()) {
                                     openshift.selector('dc', "${args.SERVICE_NAME}").delete()
