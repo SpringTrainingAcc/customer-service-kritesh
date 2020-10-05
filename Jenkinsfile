@@ -4,9 +4,23 @@ args.PROJECT_NAME = "cloudnative"
 args.SERVICE_NAME = "customer-service-kritesh"
 args.SERVICE_VERSION = "0.0.1-SNAPSHOT"
 
-
-node () {
+pipeline {
+    agent any
+        node () {
         properties([disableConcurrentBuilds()])
+        properties([buildDiscarder(logRotator(numToKeepStr: '3'))])
+        stage('preamble') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                            echo "Using Project: ${openshift.project()}"
+                            echo "Using Cluster: ${openshift.cluster()}"
+                        }
+                    }
+                }
+            }
+        }
         stage ('Code Checkout')
         {
             checkout scm
@@ -67,10 +81,10 @@ node () {
               script {
                 openshift.withCluster() {
                   openshift.withProject(args.PROJECT_NAME) {
-                    if (openshift.selector('dc', '${args.SERVICE_NAME}').exists()) {
-                      openshift.selector('dc', '${args.SERVICE_NAME}').delete()
-                      openshift.selector('svc', '${args.SERVICE_NAME}').delete()
-                      //openshift.selector('route', '${args.SERVICE_NAME}').delete()
+                    if (openshift.selector('dc', "${args.SERVICE_NAME}").exists()) {
+                      openshift.selector('dc', "${args.SERVICE_NAME}").delete()
+                      openshift.selector('svc', "${args.SERVICE_NAME}").delete()
+                      openshift.selector('route', "${args.SERVICE_NAME}"").delete()
                     }
 
                     openshift.newApp("${args.SERVICE_NAME}").narrow("svc").expose()
@@ -78,4 +92,5 @@ node () {
               }
             }
           }
+        }
 }
