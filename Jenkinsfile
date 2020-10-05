@@ -104,7 +104,7 @@ pipeline {
                                 if (openshift.selector('dc', "${args.SERVICE_NAME}").exists()) {
                                     openshift.selector('dc', "${args.SERVICE_NAME}").delete()
                                     openshift.selector('svc', "${args.SERVICE_NAME}").delete()
-                                    openshift.selector('route', "${args.SERVICE_NAME}").delete()
+                                    //openshift.selector('route', "${args.SERVICE_NAME}").delete()
                                 }
                                 openshift.newApp("${args.SERVICE_NAME}").narrow("svc").expose()
                             }
