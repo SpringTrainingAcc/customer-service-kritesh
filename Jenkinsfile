@@ -11,8 +11,8 @@ pipeline {
         }
         }
         options {
-            properties([disableConcurrentBuilds()])
-            properties([buildDiscarder(logRotator(numToKeepStr: '3'))])
+            disableConcurrentBuilds()
+            buildDiscarder(logRotator(numToKeepStr: '2'))
         }
         stages {
             stage('preamble') {
