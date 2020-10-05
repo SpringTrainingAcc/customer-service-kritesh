@@ -5,11 +5,7 @@ args.SERVICE_NAME = "customer-service-kritesh"
 args.SERVICE_VERSION = "0.0.1-SNAPSHOT"
 
 pipeline {
-    agent {
-        node {
-            label any
-        }
-        }
+    agent any
         options {
             disableConcurrentBuilds()
             buildDiscarder(logRotator(numToKeepStr: '2'))
