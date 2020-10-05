@@ -67,9 +67,9 @@ node () {
               script {
                 openshift.withCluster() {
                   openshift.withProject(args.PROJECT_NAME) {
-                    if (openshift.selector('dc', '${args.SERVICE_NAME}').exists()) {
-                      openshift.selector('dc', '${args.SERVICE_NAME}').delete()
-                      openshift.selector('svc', '${args.SERVICE_NAME}').delete()
+                    if (openshift.selector('dc', "${args.SERVICE_NAME}").exists()) {
+                      openshift.selector('dc', "${args.SERVICE_NAME}").delete()
+                      openshift.selector('svc', "${args.SERVICE_NAME}").delete()
                       //openshift.selector('route', '${args.SERVICE_NAME}').delete()
                     }
 
