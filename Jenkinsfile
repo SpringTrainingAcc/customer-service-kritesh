@@ -1,7 +1,7 @@
 def args = [:]
 args.CLUSTER_NAME = "https://172.30.0.1:443"
-//args.PROJECT_NAME = "cloudnative"
-args.PROJECT_NAME = "cicd"
+args.PROJECT_NAME = "cloudnative"
+//args.PROJECT_NAME = "cicd"
 args.SERVICE_NAME = "customer-service-kritesh"
 args.SERVICE_VERSION = "0.0.1-SNAPSHOT"
 
@@ -12,7 +12,7 @@ pipeline {
             buildDiscarder(logRotator(numToKeepStr: '5'))
         }
         stages {
-            stage('preamble') {
+            stage('Preamble') {
                 steps {
                     script {
                         openshift.withCluster() {
@@ -56,7 +56,11 @@ pipeline {
                     expression {
                         openshift.withCluster(args.CLUSTER_NAME) {
                             openshift.withProject(args.PROJECT_NAME) {
-                                return !openshift.selector("bc", "${args.SERVICE_NAME}").exists()
+                                if (openshift.selector("bc", "${args.SERVICE_NAME}").exists()){
+                                    echo "Image Builder already exists"
+                                    return
+                                }
+                                //return !openshift.selector("bc", "${args.SERVICE_NAME}").exists()
                             }
                         }
                     }
@@ -106,6 +110,9 @@ pipeline {
                                     openshift.selector('dc', "${args.SERVICE_NAME}").delete()
                                     openshift.selector('svc', "${args.SERVICE_NAME}").delete()
                                     //openshift.selector('route', "${args.SERVICE_NAME}").delete()
+                                }
+                                if (openshift.selector('route', "${args.SERVICE_NAME}").exists()) {
+                                    openshift.selector('route', "${args.SERVICE_NAME}").delete()
                                 }
                                 openshift.newApp("${args.SERVICE_NAME}").narrow("svc").expose()
                             }
