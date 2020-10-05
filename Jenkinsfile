@@ -5,11 +5,15 @@ args.SERVICE_NAME = "customer-service-kritesh"
 args.SERVICE_VERSION = "0.0.1-SNAPSHOT"
 
 pipeline {
-    agent any
-        node () {
-        properties([disableConcurrentBuilds()])
-        properties([buildDiscarder(logRotator(numToKeepStr: '3'))])
-        stage('preamble') {
+    agent {
+        node ()
+        }
+        options {
+            properties([disableConcurrentBuilds()])
+            properties([buildDiscarder(logRotator(numToKeepStr: '3'))])
+        }
+        stages {
+            stage('preamble') {
             steps {
                 script {
                     openshift.withCluster() {
